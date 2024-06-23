@@ -4,9 +4,13 @@ import jokes from './Jokes.json' assert{type:'json'};
 import path from 'path'
 import fs, { access } from "fs";
 import { type } from "os";
+import dotenv from "dotenv";
+
 
 const app = express();
-const port = 3000;
+dotenv.config();
+
+const PORT = process.env.PORT || 3000;
 const __dirname=path.resolve('./');
 const masterKey = "4VGP2DN-6EWM4SJ-N6FGRHV-Z3PR3TT";
 
@@ -24,32 +28,20 @@ app.get('/random',(req,res)=>{
 //2. GET a specific joke
 app.get('/jokes/:id',(req,res)=>{
       const jokeid=Number(req.params.id);
-      try{
-        const response =jokes.find((joke)=>joke.id==jokeid);
-        if(response.length>0 && (response>0 && response<jokes.length)){
-          return res.json(response)
+        const response =jokes.find((joke)=>joke.id===jokeid);
+        if(response){
+          return res.json(response) 
         }else{
-          return res.status(404).json({error:"id not found"})
+          res.sendStatus(404);
         }
-      }catch(error){
-        res.status(404).json({error:"id not found"});
-      }
-    
 })
 //3. GET a jokes by filtering on the joke type
-app.get('/jokes/joketype',(req,res)=>{
+app.get('/filter',(req,res)=>{
    
-  const jokeType = req.query.jokeType;
-  if (!jokeType) {
-      return res.status(400).json({ error: "jokeType query parameter is required" });
-  }
-  try {
-      const typefilter = jokes.filter((joke) => joke.jokeType.toLowerCase() === jokeType.toLowerCase());
+      const joketype = req.query.jokeType;
+      const typefilter = jokes.filter((joke) => joke.jokeType === joketype);
+   
       return res.json(typefilter);
-  } catch (error) {
-      res.status(500).json({ error: "type is not matched perfectly" });
-  }
-   
 })
 //4. POST a new joke
 app.post('/joke/addJoke',(req,res)=>{
@@ -127,6 +119,6 @@ app.delete('/jokes',(req,res)=>{
 
 
 
-app.listen(port, () => {
-  console.log(`Successfully started server on port ${port}.`);
+app.listen(PORT, () => {
+  console.log(`Successfully started server on port ${PORT}.`);
 })
